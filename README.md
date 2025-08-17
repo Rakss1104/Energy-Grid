@@ -1,11 +1,10 @@
-# ⚡ Grid Operations AI Assistant  
+#  GridWise
 
-An AI-powered assistant for managing **grid operations**, including electricity consumption forecasting, capacity planning, generation monitoring, and load optimization.  
-It leverages a **Retrieval-Augmented Generation (RAG)** pipeline to provide **grounded, data-driven insights** from historical energy consumption records.  
+GridWise is a prototype of a community-driven, AI-optimized smart grid that enables households to share, trade, and optimize energy in real time. Powered by Agentic AI and IBM WatsonX, it learns from usage patterns, predicts surplus/deficit, and proactively suggests transparent peer-to-peer energy trades — ensuring fairness, efficiency, and sustainability.
 
 ---
 
-## 🔑 Key Features  
+##  Key Features  
 
 - **Load Forecasting** – Predict future electricity demand for specific cities or areas based on historical data.  
 - **Capacity Planning** – Calculate the necessary prepared energy capacity for the next 3 hours, considering a reserve margin and historical consumption patterns.  
@@ -33,14 +32,22 @@ It leverages a **Retrieval-Augmented Generation (RAG)** pipeline to provide **gr
 
 ### 📂 Project Structure
 ```bash
-├── sample_data/
-│   └── load_history1.csv   # historical energy data
-├── flask_app.py            # main agent server
-├── rag_pipeline.py         # RAG pipeline logic
-├── requirements.txt        # dependencies
-├── constraints.txt         # dependency constraints
-└── README.md               # this file
-```
+├── chroma_db/                # Chroma vector database files
+├── faiss_db/                 # FAISS indices
+│   ├── energy/               # Energy-specific FAISS index
+│   └── patterns/             # Usage pattern FAISS index
+├── sample_data/              # Datasets for testing
+│   ├── bangalore_energy_consumption.csv
+│   └── load_history1.csv
+├── templates/                # HTML templates for frontend
+│   └── index.html
+├── flask_app.py              # Flask-based server for running GridWise
+├── mcp_Server.py             # Core backend logic
+├── requirements.txt          # Python dependencies
+├── constraints.txt           # Constraint definitions
+├── index.html                # Standalone landing page
+├── .env                      # Environment variables (WatsonX configs, API keys)
+└── README.md                 # Project documentation
 
 ### 1. Clone the repository  
 ```bash
@@ -66,7 +73,7 @@ Place your historical energy consumption data in:
 sample_data/load_history1.csv
 ```
 
-## 🚀 How to Run
+##  How to Run
 
 Start the agent server:
 ```bash
@@ -76,7 +83,7 @@ view the UI on
 ```bash
 http://127.0.0.1:5000/
 ```
-## 🧠 Core Concepts
+##  Core Concepts
 
 ### The intelligence of this app comes from its RAG pipeline:
 
