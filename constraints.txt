@@ -1,0 +1,3 @@
+urllib3>=2.4.0,<3.0.0
+langchain-core<=0.3.63
+python-dotenv~=1.0.1

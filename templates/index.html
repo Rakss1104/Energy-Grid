@@ -7,18 +7,18 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            margin: 0; 
-            padding: 20px; 
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
         }
-        .container { 
-            max-width: 1600px; 
-            margin: 0 auto; 
-            background: white; 
-            border-radius: 15px; 
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
             overflow: hidden;
         }
@@ -30,7 +30,7 @@
         }
         .header h1 { margin: 0; font-size: 2.5em; font-weight: 300; }
         .header p { margin: 10px 0 0 0; opacity: 0.9; }
-        
+
         .nav-tabs {
             display: flex;
             background: #f8f9fa;
@@ -57,46 +57,46 @@
             background: #e9ecef;
             color: #495057;
         }
-        
+
         .tab-content {
             display: none;
         }
         .tab-content.active {
             display: block;
         }
-        
-        .tools-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(600px, 1fr)); 
-            gap: 30px; 
-            padding: 30px; 
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+            gap: 30px;
+            padding: 30px;
         }
-        .tool-card { 
-            background: #f8f9ff; 
-            border-radius: 12px; 
-            padding: 25px; 
+        .tool-card {
+            background: #f8f9ff;
+            border-radius: 12px;
+            padding: 25px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.08);
             border: 1px solid #e1e8ed;
         }
-        .tool-card h3 { 
-            margin: 0 0 20px 0; 
-            color: #2c3e50; 
+        .tool-card h3 {
+            margin: 0 0 20px 0;
+            color: #2c3e50;
             font-size: 1.4em;
             border-bottom: 3px solid #3498db;
             padding-bottom: 10px;
         }
         .form-group { margin-bottom: 20px; }
-        .form-group label { 
-            display: block; 
-            margin-bottom: 8px; 
-            font-weight: 600; 
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
             color: #34495e;
         }
-        .form-group input, .form-group textarea, .form-group select { 
-            width: 100%; 
-            padding: 12px; 
-            border: 2px solid #ddd; 
-            border-radius: 8px; 
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
             font-size: 14px;
             transition: border-color 0.3s;
         }
@@ -109,53 +109,53 @@
             grid-template-columns: 1fr 1fr;
             gap: 15px;
         }
-        
-        .btn { 
-            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); 
-            color: white; 
-            border: none; 
-            padding: 12px 24px; 
-            border-radius: 8px; 
-            cursor: pointer; 
+
+        .btn {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
             font-size: 16px;
             font-weight: 600;
             transition: transform 0.2s, box-shadow 0.2s;
             margin-right: 10px;
             margin-bottom: 10px;
         }
-        .btn:hover { 
+        .btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
         }
         .btn:active { transform: translateY(0); }
-        .btn-secondary { 
-            background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%); 
+        .btn-secondary {
+            background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
         }
-        .btn-success { 
-            background: linear-gradient(135deg, #27ae60 0%, #229954 100%); 
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
         }
-        .btn-warning { 
-            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%); 
+        .btn-warning {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
         }
-        
-        .result { 
-            margin-top: 25px; 
-            padding: 20px; 
-            background: #e8f6f3; 
+
+        .result {
+            margin-top: 25px;
+            padding: 20px;
+            background: #e8f6f3;
             border-radius: 8px;
             border-left: 5px solid #27ae60;
         }
-        .error { 
-            background: #fdf2f2; 
+        .error {
+            background: #fdf2f2;
             border-left: 5px solid #e74c3c;
             color: #c0392b;
         }
-        .loading { 
-            text-align: center; 
+        .loading {
+            text-align: center;
             padding: 20px;
             color: #7f8c8d;
         }
-        
+
         .upload-area {
             border: 2px dashed #3498db;
             border-radius: 8px;
@@ -172,13 +172,13 @@
             border-color: #2980b9;
             background: #e3f2fd;
         }
-        
+
         .sources-container { margin-top: 15px; }
-        .source-row { 
-            display: grid; 
-            grid-template-columns: 2fr 1fr 1fr 1fr auto; 
-            gap: 10px; 
-            align-items: end; 
+        .source-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr auto;
+            gap: 10px;
+            align-items: end;
             margin-bottom: 10px;
             padding: 10px;
             background: white;
@@ -190,29 +190,29 @@
             gap: 10px;
             margin-bottom: 10px;
         }
-        .remove-btn { 
-            background: #e74c3c; 
-            padding: 8px 12px; 
+        .remove-btn {
+            background: #e74c3c;
+            padding: 8px 12px;
             font-size: 12px;
         }
-        .add-btn { 
-            background: #27ae60; 
-            padding: 8px 16px; 
+        .add-btn {
+            background: #27ae60;
+            padding: 8px 16px;
             font-size: 14px;
             margin-top: 10px;
         }
-        pre { 
-            background: #2c3e50; 
-            color: #ecf0f1; 
-            padding: 15px; 
-            border-radius: 8px; 
+        pre {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 8px;
             overflow-x: auto;
             font-size: 13px;
         }
         .plot-container { margin-top: 20px; text-align: center; }
-        .plot-container img { 
-            max-width: 100%; 
-            border-radius: 8px; 
+        .plot-container img {
+            max-width: 100%;
+            border-radius: 8px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
         .status-indicator {
@@ -226,7 +226,7 @@
         .status-normal { background: #d5f4e6; color: #27ae60; }
         .status-warning { background: #fef9e7; color: #f39c12; }
         .status-critical { background: #fadbd8; color: #e74c3c; }
-        
+
         .sector-breakdown {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -254,7 +254,7 @@
             font-size: 12px;
             color: #7f8c8d;
         }
-        
+
         .similar-day {
             background: white;
             padding: 15px;
@@ -273,6 +273,57 @@
             font-size: 12px;
             color: #7f8c8d;
         }
+        .user-section {
+            margin: 30px 0;
+            padding: 25px;
+            background: #f8f9ff;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            border: 1px solid #e1e8ed;
+        }
+        .user-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .user-card {
+            background: white;
+            border-radius: 8px;
+            padding: 18px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.07);
+            border-left: 5px solid #3498db;
+        }
+        .user-card h4 {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+        }
+        .user-card .balance {
+            font-size: 22px;
+            font-weight: bold;
+            color: #27ae60;
+        }
+        .user-card .location {
+            font-size: 13px;
+            color: #7f8c8d;
+        }
+        .trade-form {
+            background: #e8f6f3;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 5px solid #27ae60;
+        }
+        .trade-form .form-row {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+        .trade-form label {
+            font-weight: 600;
+            color: #34495e;
+        }
+        .trade-result {
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
@@ -281,14 +332,15 @@
             <h1>⚡ Enhanced Grid Operations Dashboard</h1>
             <p>AI-Powered Electric Grid Management with RAG Pipeline & Sector Analysis</p>
         </div>
-        
+
         <nav class="nav-tabs">
             <button class="nav-tab active" onclick="switchTab('forecasting')">🔮 Forecasting</button>
             <button class="nav-tab" onclick="switchTab('optimization')">⚖️ Optimization</button>
             <button class="nav-tab" onclick="switchTab('analysis')">📊 Analysis</button>
             <button class="nav-tab" onclick="switchTab('data-upload')">📁 Data Upload</button>
+            <button class="nav-tab" onclick="switchTab('users')">👤 Users & Trading</button>
         </nav>
-        
+
         <!-- Forecasting Tab -->
         <div id="forecasting" class="tab-content active">
             <div class="tools-grid">
@@ -557,12 +609,42 @@
                         <p>Your CSV should contain the following columns:</p>
                         <code>Date, Hour, City, Area, Industrial, Households, Schools, Colleges, Hospitals, Total</code>
                         <p><strong>Example:</strong></p>
-                        <pre>Date,Hour,City,Area,Industrial,Households,Schools,Colleges,Hospitals,Total
-2025-01-01,00:00,Bangalore,MG Road,81.22,46.54,2.57,4.75,28.88,163.96</pre>
+                        <pre>Date,Hour,City,Area,Industrial,Households,Schools,Colleges,Hospitals,Total,2025-01-01,00:00,Bangalore,MG Road,81.22,46.54,2.57,4.75,28.88,163.96</pre>
                     </div>
                     <div id="upload-result"></div>
                 </div>
             </div>
+        </div>
+
+        <!-- Users & Trading Tab -->
+        <div id="users" class="tab-content">
+                    <div class="user-section">
+                        <h3>👤 User Energy Balances & Trading</h3>
+                        <div id="user-list" class="user-list"></div>
+                        <div class="trade-form">
+                            <h4>🔄 Trade Energy Units (MW)</h4>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="trade-sender">Sender:</label>
+                                    <select id="trade-sender"></select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="trade-receiver">Receiver:</label>
+                                    <select id="trade-receiver"></select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="trade-units">Units (MW):</label>
+                                    <input type="number" id="trade-units" min="0.1" step="0.1" value="10">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="trade-note">Note (optional):</label>
+                                <input type="text" id="trade-note" placeholder="e.g., Peak hour transfer">
+                            </div>
+                            <button class="btn btn-success" onclick="tradeEnergy()">Execute Trade</button>
+                            <div id="trade-result" class="trade-result"></div>
+                        </div>
+                    </div>
         </div>
     </div>
 
@@ -573,15 +655,15 @@
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
             });
-            
+
             // Remove active class from all nav tabs
             document.querySelectorAll('.nav-tab').forEach(tab => {
                 tab.classList.remove('active');
             });
-            
+
             // Show selected tab content
             document.getElementById(tabName).classList.add('active');
-            
+
             // Add active class to clicked nav tab
             event.target.classList.add('active');
         }
@@ -679,7 +761,7 @@
             try {
                 const response = await axios.get('/api/sample-data');
                 const data = response.data;
-                
+
                 if (type === 'sources') {
                     // Clear existing sources
                     document.getElementById('sources-container').innerHTML = '';
@@ -833,7 +915,7 @@
                 });
 
                 const result = response.data.data;
-                
+
                 let sectorBreakdownHtml = '';
                 if (result.sector_breakdown && result.sector_breakdown.length > 0) {
                     sectorBreakdownHtml = '<h5>Sector-wise Preparation (Hour 1):</h5><div class="sector-breakdown">';
@@ -849,7 +931,7 @@
                     });
                     sectorBreakdownHtml += '</div>';
                 }
-                
+
                 resultDiv.innerHTML = `
                     <div class="result">
                         <h4>✅ Preparation Plan Ready</h4>
@@ -895,7 +977,7 @@
 
                 const result = response.data.data;
                 const statusClass = `status-${result.status}`;
-                
+
                 let anomaliesHtml = '';
                 if (result.anomalies.length > 0) {
                     anomaliesHtml = '<h5>🚨 Anomalies Detected:</h5><ul>';
@@ -944,19 +1026,19 @@
                 });
 
                 const result = response.data.data;
-                const riskClass = result.residual_risk === 'high' ? 'status-critical' : 
+                const riskClass = result.residual_risk === 'high' ? 'status-critical' :
                                  result.residual_risk === 'medium' ? 'status-warning' : 'status-normal';
 
                 let actionsHtml = '<h5>📋 Recommended Actions:</h5><ol>';
                 result.actions.forEach(action => {
-                    const costColor = action.cost_level === 'high' ? '#e74c3c' : 
+                    const costColor = action.cost_level === 'high' ? '#e74c3c' :
                                     action.cost_level === 'medium' ? '#f39c12' : '#27ae60';
                     actionsHtml += `
                         <li>
                             <strong>${action.title}</strong><br>
-                            <small style="color: ${costColor}">💰 ${action.cost_level.toUpperCase()} cost</small> | 
-                            <small>⚡ ${Math.round(action.mw_effect)} MW impact</small> | 
-                            <small>⏱️ ${action.eta_min} min ETA</small> | 
+                            <small style="color: ${costColor}">💰 ${action.cost_level.toUpperCase()} cost</small> |
+                            <small>⚡ ${Math.round(action.mw_effect)} MW impact</small> |
+                            <small>⏱️ ${action.eta_min} min ETA</small> |
                             <small>🏢 ${action.sector || 'General'} sector</small><br>
                             <em>${action.notes}</em>
                         </li>
@@ -1043,6 +1125,102 @@
             } catch (error) {
                 resultDiv.innerHTML = `<div class="result error"><strong>❌ Error:</strong> ${error.response?.data?.error || error.message}</div>`;
             }
+        }
+        // --- USER & ENERGY TRADING SECTION ---
+        let usersData = [];
+
+        async function loadUsers() {
+            try {
+                const response = await axios.get('/api/users');
+                usersData = response.data.users;
+                renderUserList();
+                populateTradeDropdowns();
+            } catch (error) {
+                document.getElementById('user-list').innerHTML = `<div class="result error"><strong>❌ Error loading users:</strong> ${error.response?.data?.error || error.message}</div>`;
+            }
+        }
+
+        function renderUserList() {
+            const userListDiv = document.getElementById('user-list');
+            if (!usersData || usersData.length === 0) {
+                userListDiv.innerHTML = '<p>No users found.</p>';
+                return;
+            }
+            userListDiv.innerHTML = usersData.map(user => `
+                <div class="user-card">
+                    <h4>${user.name}</h4>
+                    <div class="balance">${Math.round(user.balance_mw * 100) / 100} MW</div>
+                    <div class="location">${user.city} - ${user.area}</div>
+                    <div style="font-size:12px;color:#888;">ID: ${user.user_id}</div>
+                </div>
+            `).join('');
+        }
+
+        function populateTradeDropdowns() {
+            const senderSelect = document.getElementById('trade-sender');
+            const receiverSelect = document.getElementById('trade-receiver');
+            senderSelect.innerHTML = '';
+            receiverSelect.innerHTML = '';
+            usersData.forEach(user => {
+                senderSelect.innerHTML += `<option value="${user.user_id}">${user.name} (${user.area})</option>`;
+                receiverSelect.innerHTML += `<option value="${user.user_id}">${user.name} (${user.area})</option>`;
+            });
+        }
+
+        async function tradeEnergy() {
+            const senderId = document.getElementById('trade-sender').value;
+            const receiverId = document.getElementById('trade-receiver').value;
+            const unitsMw = parseFloat(document.getElementById('trade-units').value);
+            const note = document.getElementById('trade-note').value;
+            const resultDiv = document.getElementById('trade-result');
+            resultDiv.innerHTML = '<div class="loading">🔄 Executing trade...</div>';
+
+            if (senderId === receiverId) {
+                resultDiv.innerHTML = `<div class="result error"><strong>❌ Error:</strong> Sender and receiver must be different users.</div>`;
+                return;
+            }
+            if (isNaN(unitsMw) || unitsMw <= 0) {
+                resultDiv.innerHTML = `<div class="result error"><strong>❌ Error:</strong> Units to trade must be positive.</div>`;
+                return;
+            }
+
+            try {
+                const response = await axios.post('/api/trade-energy', {
+                    sender_id: senderId,
+                    receiver_id: receiverId,
+                    units_mw: unitsMw,
+                    note: note
+                });
+                const result = response.data;
+                if (result.status === "success") {
+                    resultDiv.innerHTML = `
+                        <div class="result">
+                            <h4>✅ Trade Successful</h4>
+                            <p><strong>Transaction ID:</strong> ${result.transaction_id}</p>
+                            <p><strong>Timestamp:</strong> ${result.timestamp}</p>
+                            <p><strong>Sender:</strong> ${result.sender_id} | <strong>New Balance:</strong> ${Math.round(result.sender_balance_mw * 100) / 100} MW</p>
+                            <p><strong>Receiver:</strong> ${result.receiver_id} | <strong>New Balance:</strong> ${Math.round(result.receiver_balance_mw * 100) / 100} MW</p>
+                            <p><strong>Units Traded:</strong> ${result.units_mw} MW</p>
+                            <p><strong>Note:</strong> ${result.note}</p>
+                        </div>
+                    `;
+                    // Refresh user list to show updated balances
+                    await loadUsers();
+                } else {
+                    resultDiv.innerHTML = `<div class="result error"><strong>❌ Trade Failed:</strong> ${result.message}</div>`;
+                }
+            } catch (error) {
+                const errMsg = error.response?.data?.message || error.message;
+                resultDiv.innerHTML = `<div class="result error"><strong>❌ Trade Failed:</strong> ${errMsg}</div>`;
+            }
+        }
+
+        // Load users when the tab is shown
+        document.querySelector('button.nav-tab[onclick*="users"]').addEventListener('click', loadUsers);
+
+        // Initial load for users tab if it's default
+        if (document.getElementById('users').classList.contains('active')) {
+            loadUsers();
         }
     </script>
 </body>

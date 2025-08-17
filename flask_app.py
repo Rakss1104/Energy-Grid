@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 
 from flask import Flask, render_template, request, jsonify, send_file
 from dotenv import load_dotenv
+import uuid
 
 # Import your MCP tools (assuming they're in updated_mcp_server.py)
 from mcp_Server import (
@@ -34,7 +35,7 @@ def api_predict():
     """API endpoint for consumption prediction"""
     try:
         data = request.json
-        
+
         # Create request object with new schema
         req = ForecastRequest(
             city=data['city'],
@@ -42,17 +43,17 @@ def api_predict():
             horizon_hours=int(data.get('horizon_hours', 24)),
             weather_hint=data.get('weather_hint')
         )
-        
+
         # Call the prediction tool
         result = predict_consumption(req)
-        
+
         # Convert plot to base64 for web display
         with open(result['plot_path'], 'rb') as img_file:
             plot_data = base64.b64encode(img_file.read()).decode()
-        
+
         # Clean up the temporary file
         os.remove(result['plot_path'])
-        
+
         return jsonify({
             'success': True,
             'data': {
@@ -60,7 +61,7 @@ def api_predict():
                 'plot_base64': plot_data
             }
         })
-        
+
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 400
 
@@ -69,7 +70,7 @@ def api_prep():
     """API endpoint for 3-hour energy preparation"""
     try:
         data = request.json
-        
+
         req = Prep3hRequest(
             city=data['city'],
             area=data.get('area'),
@@ -77,11 +78,11 @@ def api_prep():
             reserve_margin_pct=float(data.get('reserve_margin_pct', 15.0)),
             notes=data.get('notes')
         )
-        
+
         result = prep_energy_3h(req)
-        
+
         return jsonify({'success': True, 'data': result})
-        
+
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 400
 
@@ -90,7 +91,7 @@ def api_monitor():
     """API endpoint for generation monitoring"""
     try:
         data = request.json
-        
+
         # Convert sources to LiveSource objects
         sources = []
         for source_data in data['sources']:
@@ -100,16 +101,16 @@ def api_monitor():
                 current_mw=float(source_data['current_mw']),
                 expected_mw=float(source_data.get('expected_mw', 0)) or None
             ))
-        
+
         req = MonitorRequest(
             window_minutes=int(data.get('window_minutes', 15)),
             sources=sources
         )
-        
+
         result = monitor_generation(req)
-        
+
         return jsonify({'success': True, 'data': result})
-        
+
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 400
 
@@ -118,7 +119,7 @@ def api_optimize():
     """API endpoint for load optimization"""
     try:
         data = request.json
-        
+
         req = OptimizeRequest(
             city=data['city'],
             area=data.get('area'),
@@ -127,11 +128,11 @@ def api_optimize():
             renewables_now_mw=float(data['renewables_now_mw']),
             constraints=data.get('constraints')
         )
-        
+
         result = optimize_load(req)
-        
+
         return jsonify({'success': True, 'data': result})
-        
+
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 400
 
@@ -140,14 +141,14 @@ def api_analyze_patterns():
     """API endpoint for consumption pattern analysis"""
     try:
         data = request.json
-        
+
         result = analyze_consumption_patterns(
             city=data['city'],
             area=data.get('area')
         )
-        
+
         return jsonify({'success': True, 'data': result})
-        
+
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 400
 
@@ -156,29 +157,29 @@ def api_similar_days():
     """API endpoint for finding similar consumption days"""
     try:
         data = request.json
-        
+
         result = get_similar_consumption_days(
             city=data['city'],
             target_date=data['target_date'],
             area=data.get('area'),
             n_days=int(data.get('n_days', 5))
         )
-        
+
         return jsonify({'success': True, 'data': result})
-        
+
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 400
 
 @app.route('/api/sample-data')
 def sample_data():
     """Generate sample data for testing based on new dataset format"""
-    
+
     # Cities and areas based on the new dataset
     cities = ["Bangalore"]
-    areas = ["MG Road", "Brigade Road", "Church Street", "Richmond Town", 
-             "Shivajinagar", "Vasanth Nagar", "Ulsoor (Halasuru)", 
+    areas = ["MG Road", "Brigade Road", "Church Street", "Richmond Town",
+             "Shivajinagar", "Vasanth Nagar", "Ulsoor (Halasuru)",
              "Indiranagar", "Koramangala", "Malleshwaram", "Rajajinagar"]
-    
+
     # Sample renewable sources
     sources = [
         {'name': 'Solar Farm Alpha', 'kind': 'solar', 'current_mw': 180, 'expected_mw': 220},
@@ -186,7 +187,7 @@ def sample_data():
         {'name': 'Rooftop Solar Network', 'kind': 'rooftop', 'current_mw': 45, 'expected_mw': 50},
         {'name': 'Hydro Plant Gamma', 'kind': 'hydro', 'current_mw': 150, 'expected_mw': 150},
     ]
-    
+
     # Sample forecast data (6 hours)
     base_forecast = 150  # MW
     sample_forecast = []
@@ -199,7 +200,7 @@ def sample_data():
         else:
             multiplier = 1.0
         sample_forecast.append(round(base_forecast * multiplier * (1 + 0.1 * np.random.rand()), 1))
-    
+
     return jsonify({
         'cities': cities,
         'areas': areas,
@@ -214,23 +215,23 @@ def upload_csv():
     try:
         if 'file' not in request.files:
             return jsonify({'success': False, 'error': 'No file uploaded'}), 400
-        
+
         file = request.files['file']
         if file.filename == '':
             return jsonify({'success': False, 'error': 'No file selected'}), 400
-        
+
         if file and file.filename.endswith('.csv'):
             # Read CSV data
             df = pd.read_csv(file)
-            
+
             # Validate CSV format
             required_columns = ['Date', 'Hour', 'City', 'Area', 'Industrial', 'Households', 'Schools', 'Colleges', 'Hospitals', 'Total']
             if not all(col in df.columns for col in required_columns):
                 return jsonify({
-                    'success': False, 
+                    'success': False,
                     'error': f'CSV must contain columns: {", ".join(required_columns)}'
                 }), 400
-            
+
             # Basic statistics
             stats = {
                 'total_records': len(df),
@@ -251,27 +252,115 @@ def upload_csv():
                     'hospitals_avg': float(df['Hospitals'].mean())
                 }
             }
-            
+
             # Save the uploaded file for processing
             upload_path = 'uploaded_energy_data.csv'
             df.to_csv(upload_path, index=False)
-            
+
             return jsonify({
-                'success': True, 
+                'success': True,
                 'message': f'CSV uploaded successfully. {len(df)} records processed.',
                 'stats': stats,
                 'filename': file.filename
             })
         else:
             return jsonify({'success': False, 'error': 'Please upload a CSV file'}), 400
-            
+
     except Exception as e:
         return jsonify({'success': False, 'error': f'Error processing CSV: {str(e)}'}), 400
+
+    # --- Hardcoded Users and Energy Balances ---
+
+USERS = [
+    {"user_id": "user1", "name": "Alice", "city": "Bangalore", "area": "MG Road", "balance_mw": 500.0},
+    {"user_id": "user2", "name": "Bob", "city": "Bangalore", "area": "Indiranagar", "balance_mw": 300.0},
+    {"user_id": "user3", "name": "Charlie", "city": "Bangalore", "area": "Koramangala", "balance_mw": 200.0},
+    {"user_id": "user4", "name": "Diana", "city": "Bangalore", "area": "Malleshwaram", "balance_mw": 150.0},
+]
+
+def get_user_by_id(user_id: str):
+    for user in USERS:
+        if user["user_id"] == user_id:
+            return user
+    return None
+
+@app.route('/api/users', methods=['GET'])
+def api_retrieve_users():
+    """Retrieve all users and their energy balances."""
+    return jsonify({"users": USERS})
+
+@app.route('/api/user-balance/<user_id>', methods=['GET'])
+def api_get_user_balance(user_id):
+    """Get the energy balance (MW) for a specific user."""
+    user = get_user_by_id(user_id)
+    if user:
+        return jsonify({"user_id": user_id, "name": user["name"], "balance_mw": user["balance_mw"]})
+    else:
+        return jsonify({"error": f"User {user_id} not found."}), 404
+
+@app.route('/api/trade-energy', methods=['POST'])
+def api_trade_energy_units():
+    """Trade energy units (MW) between hardcoded users. Updates balances and stores transaction in MongoDB."""
+    try:
+        data = request.json
+        sender_id = data.get("sender_id")
+        receiver_id = data.get("receiver_id")
+        units_mw = float(data.get("units_mw", 0))
+        note = data.get("note")
+        sender = get_user_by_id(sender_id)
+        receiver = get_user_by_id(receiver_id)
+        if not sender or not receiver:
+            return jsonify({
+                "status": "failed",
+                "message": "Sender or receiver not found.",
+                "sender_id": sender_id,
+                "receiver_id": receiver_id,
+                "units_mw": units_mw
+            }), 400
+        if units_mw <= 0:
+            return jsonify({
+                "status": "failed",
+                "message": "Units to trade must be positive.",
+                "sender_id": sender_id,
+                "receiver_id": receiver_id,
+                "units_mw": units_mw
+            }), 400
+        if sender["balance_mw"] < units_mw:
+            return jsonify({
+                "status": "failed",
+                "message": "Sender does not have enough balance.",
+                "sender_id": sender_id,
+                "receiver_id": receiver_id,
+                "units_mw": units_mw
+            }), 400
+        # Update balances
+        sender["balance_mw"] -= units_mw
+        receiver["balance_mw"] += units_mw
+        transaction_id = str(uuid.uuid4())
+        timestamp = datetime.utcnow().isoformat()
+        transaction = {
+            "transaction_id": transaction_id,
+            "timestamp": timestamp,
+            "sender_id": sender_id,
+            "receiver_id": receiver_id,
+            "units_mw": units_mw,
+            "note": note or "Energy units traded successfully."
+        }
+        # Store transaction in MongoDB
+        # transactions_collection.insert_one(transaction)
+        return jsonify({
+            "status": "success",
+            **transaction,
+            "sender_balance_mw": sender["balance_mw"],
+            "receiver_balance_mw": receiver["balance_mw"]
+        })
+    except Exception as e:
+        return jsonify({"status": "failed", "message": str(e)}), 400
 
 if __name__ == '__main__':
     # Create templates directory and HTML file if they don't exist
     os.makedirs('templates', exist_ok=True)
-    
+
     # Create the updated HTML template
     html_template = '''<!DOCTYPE html>
 <html lang="en">
@@ -282,18 +371,18 @@ if __name__ == '__main__':
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            margin: 0; 
-            padding: 20px; 
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
         }
-        .container { 
-            max-width: 1600px; 
-            margin: 0 auto; 
-            background: white; 
-            border-radius: 15px; 
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
             overflow: hidden;
         }
@@ -305,7 +394,7 @@ if __name__ == '__main__':
         }
         .header h1 { margin: 0; font-size: 2.5em; font-weight: 300; }
         .header p { margin: 10px 0 0 0; opacity: 0.9; }
-        
+
         .nav-tabs {
             display: flex;
             background: #f8f9fa;
@@ -332,46 +421,46 @@ if __name__ == '__main__':
             background: #e9ecef;
             color: #495057;
         }
-        
+
         .tab-content {
             display: none;
         }
         .tab-content.active {
             display: block;
         }
-        
-        .tools-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(600px, 1fr)); 
-            gap: 30px; 
-            padding: 30px; 
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+            gap: 30px;
+            padding: 30px;
         }
-        .tool-card { 
-            background: #f8f9ff; 
-            border-radius: 12px; 
-            padding: 25px; 
+        .tool-card {
+            background: #f8f9ff;
+            border-radius: 12px;
+            padding: 25px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.08);
             border: 1px solid #e1e8ed;
         }
-        .tool-card h3 { 
-            margin: 0 0 20px 0; 
-            color: #2c3e50; 
+        .tool-card h3 {
+            margin: 0 0 20px 0;
+            color: #2c3e50;
             font-size: 1.4em;
             border-bottom: 3px solid #3498db;
             padding-bottom: 10px;
         }
         .form-group { margin-bottom: 20px; }
-        .form-group label { 
-            display: block; 
-            margin-bottom: 8px; 
-            font-weight: 600; 
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
             color: #34495e;
         }
-        .form-group input, .form-group textarea, .form-group select { 
-            width: 100%; 
-            padding: 12px; 
-            border: 2px solid #ddd; 
-            border-radius: 8px; 
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
             font-size: 14px;
             transition: border-color 0.3s;
         }
@@ -384,53 +473,53 @@ if __name__ == '__main__':
             grid-template-columns: 1fr 1fr;
             gap: 15px;
         }
-        
-        .btn { 
-            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); 
-            color: white; 
-            border: none; 
-            padding: 12px 24px; 
-            border-radius: 8px; 
-            cursor: pointer; 
+
+        .btn {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
             font-size: 16px;
             font-weight: 600;
             transition: transform 0.2s, box-shadow 0.2s;
             margin-right: 10px;
             margin-bottom: 10px;
         }
-        .btn:hover { 
+        .btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
         }
         .btn:active { transform: translateY(0); }
-        .btn-secondary { 
-            background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%); 
+        .btn-secondary {
+            background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
         }
-        .btn-success { 
-            background: linear-gradient(135deg, #27ae60 0%, #229954 100%); 
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
         }
-        .btn-warning { 
-            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%); 
+        .btn-warning {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
         }
-        
-        .result { 
-            margin-top: 25px; 
-            padding: 20px; 
-            background: #e8f6f3; 
+
+        .result {
+            margin-top: 25px;
+            padding: 20px;
+            background: #e8f6f3;
             border-radius: 8px;
             border-left: 5px solid #27ae60;
         }
-        .error { 
-            background: #fdf2f2; 
+        .error {
+            background: #fdf2f2;
             border-left: 5px solid #e74c3c;
             color: #c0392b;
         }
-        .loading { 
-            text-align: center; 
+        .loading {
+            text-align: center;
             padding: 20px;
             color: #7f8c8d;
         }
-        
+
         .upload-area {
             border: 2px dashed #3498db;
             border-radius: 8px;
@@ -447,13 +536,13 @@ if __name__ == '__main__':
             border-color: #2980b9;
             background: #e3f2fd;
         }
-        
+
         .sources-container { margin-top: 15px; }
-        .source-row { 
-            display: grid; 
-            grid-template-columns: 2fr 1fr 1fr 1fr auto; 
-            gap: 10px; 
-            align-items: end; 
+        .source-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr auto;
+            gap: 10px;
+            align-items: end;
             margin-bottom: 10px;
             padding: 10px;
             background: white;
@@ -465,29 +554,29 @@ if __name__ == '__main__':
             gap: 10px;
             margin-bottom: 10px;
         }
-        .remove-btn { 
-            background: #e74c3c; 
-            padding: 8px 12px; 
+        .remove-btn {
+            background: #e74c3c;
+            padding: 8px 12px;
             font-size: 12px;
         }
-        .add-btn { 
-            background: #27ae60; 
-            padding: 8px 16px; 
+        .add-btn {
+            background: #27ae60;
+            padding: 8px 16px;
             font-size: 14px;
             margin-top: 10px;
         }
-        pre { 
-            background: #2c3e50; 
-            color: #ecf0f1; 
-            padding: 15px; 
-            border-radius: 8px; 
+        pre {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 8px;
             overflow-x: auto;
             font-size: 13px;
         }
         .plot-container { margin-top: 20px; text-align: center; }
-        .plot-container img { 
-            max-width: 100%; 
-            border-radius: 8px; 
+        .plot-container img {
+            max-width: 100%;
+            border-radius: 8px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
         .status-indicator {
@@ -501,7 +590,7 @@ if __name__ == '__main__':
         .status-normal { background: #d5f4e6; color: #27ae60; }
         .status-warning { background: #fef9e7; color: #f39c12; }
         .status-critical { background: #fadbd8; color: #e74c3c; }
-        
+
         .sector-breakdown {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -529,7 +618,7 @@ if __name__ == '__main__':
             font-size: 12px;
             color: #7f8c8d;
         }
-        
+
         .similar-day {
             background: white;
             padding: 15px;
@@ -548,6 +637,57 @@ if __name__ == '__main__':
             font-size: 12px;
             color: #7f8c8d;
         }
+        .user-section {
+            margin: 30px 0;
+            padding: 25px;
+            background: #f8f9ff;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            border: 1px solid #e1e8ed;
+        }
+        .user-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .user-card {
+            background: white;
+            border-radius: 8px;
+            padding: 18px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.07);
+            border-left: 5px solid #3498db;
+        }
+        .user-card h4 {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+        }
+        .user-card .balance {
+            font-size: 22px;
+            font-weight: bold;
+            color: #27ae60;
+        }
+        .user-card .location {
+            font-size: 13px;
+            color: #7f8c8d;
+        }
+        .trade-form {
+            background: #e8f6f3;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 5px solid #27ae60;
+        }
+        .trade-form .form-row {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+        .trade-form label {
+            font-weight: 600;
+            color: #34495e;
+        }
+        .trade-result {
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
@@ -556,14 +696,15 @@ if __name__ == '__main__':
             <h1>⚡ Enhanced Grid Operations Dashboard</h1>
             <p>AI-Powered Electric Grid Management with RAG Pipeline & Sector Analysis</p>
         </div>
-        
+
         <nav class="nav-tabs">
             <button class="nav-tab active" onclick="switchTab('forecasting')">🔮 Forecasting</button>
             <button class="nav-tab" onclick="switchTab('optimization')">⚖️ Optimization</button>
             <button class="nav-tab" onclick="switchTab('analysis')">📊 Analysis</button>
             <button class="nav-tab" onclick="switchTab('data-upload')">📁 Data Upload</button>
+            <button class="nav-tab" onclick="switchTab('users')">👤 Users & Trading</button>
         </nav>
-        
+
         <!-- Forecasting Tab -->
         <div id="forecasting" class="tab-content active">
             <div class="tools-grid">
@@ -832,12 +973,42 @@ if __name__ == '__main__':
                         <p>Your CSV should contain the following columns:</p>
                         <code>Date, Hour, City, Area, Industrial, Households, Schools, Colleges, Hospitals, Total</code>
                         <p><strong>Example:</strong></p>
-                        <pre>Date,Hour,City,Area,Industrial,Households,Schools,Colleges,Hospitals,Total
-2025-01-01,00:00,Bangalore,MG Road,81.22,46.54,2.57,4.75,28.88,163.96</pre>
+                        <pre>Date,Hour,City,Area,Industrial,Households,Schools,Colleges,Hospitals,Total,2025-01-01,00:00,Bangalore,MG Road,81.22,46.54,2.57,4.75,28.88,163.96</pre>
                     </div>
                     <div id="upload-result"></div>
                 </div>
             </div>
+        </div>
+
+        <!-- Users & Trading Tab -->
+        <div id="users" class="tab-content">
+                    <div class="user-section">
+                        <h3>👤 User Energy Balances & Trading</h3>
+                        <div id="user-list" class="user-list"></div>
+                        <div class="trade-form">
+                            <h4>🔄 Trade Energy Units (MW)</h4>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="trade-sender">Sender:</label>
+                                    <select id="trade-sender"></select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="trade-receiver">Receiver:</label>
+                                    <select id="trade-receiver"></select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="trade-units">Units (MW):</label>
+                                    <input type="number" id="trade-units" min="0.1" step="0.1" value="10">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="trade-note">Note (optional):</label>
+                                <input type="text" id="trade-note" placeholder="e.g., Peak hour transfer">
+                            </div>
+                            <button class="btn btn-success" onclick="tradeEnergy()">Execute Trade</button>
+                            <div id="trade-result" class="trade-result"></div>
+                        </div>
+                    </div>
         </div>
     </div>
 
@@ -848,15 +1019,15 @@ if __name__ == '__main__':
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
             });
-            
+
             // Remove active class from all nav tabs
             document.querySelectorAll('.nav-tab').forEach(tab => {
                 tab.classList.remove('active');
             });
-            
+
             // Show selected tab content
             document.getElementById(tabName).classList.add('active');
-            
+
             // Add active class to clicked nav tab
             event.target.classList.add('active');
         }
@@ -954,7 +1125,7 @@ if __name__ == '__main__':
             try {
                 const response = await axios.get('/api/sample-data');
                 const data = response.data;
-                
+
                 if (type === 'sources') {
                     // Clear existing sources
                     document.getElementById('sources-container').innerHTML = '';
@@ -1108,7 +1279,7 @@ if __name__ == '__main__':
                 });
 
                 const result = response.data.data;
-                
+
                 let sectorBreakdownHtml = '';
                 if (result.sector_breakdown && result.sector_breakdown.length > 0) {
                     sectorBreakdownHtml = '<h5>Sector-wise Preparation (Hour 1):</h5><div class="sector-breakdown">';
@@ -1124,7 +1295,7 @@ if __name__ == '__main__':
                     });
                     sectorBreakdownHtml += '</div>';
                 }
-                
+
                 resultDiv.innerHTML = `
                     <div class="result">
                         <h4>✅ Preparation Plan Ready</h4>
@@ -1170,7 +1341,7 @@ if __name__ == '__main__':
 
                 const result = response.data.data;
                 const statusClass = `status-${result.status}`;
-                
+
                 let anomaliesHtml = '';
                 if (result.anomalies.length > 0) {
                     anomaliesHtml = '<h5>🚨 Anomalies Detected:</h5><ul>';
@@ -1219,19 +1390,19 @@ if __name__ == '__main__':
                 });
 
                 const result = response.data.data;
-                const riskClass = result.residual_risk === 'high' ? 'status-critical' : 
+                const riskClass = result.residual_risk === 'high' ? 'status-critical' :
                                  result.residual_risk === 'medium' ? 'status-warning' : 'status-normal';
 
                 let actionsHtml = '<h5>📋 Recommended Actions:</h5><ol>';
                 result.actions.forEach(action => {
-                    const costColor = action.cost_level === 'high' ? '#e74c3c' : 
+                    const costColor = action.cost_level === 'high' ? '#e74c3c' :
                                     action.cost_level === 'medium' ? '#f39c12' : '#27ae60';
                     actionsHtml += `
                         <li>
                             <strong>${action.title}</strong><br>
-                            <small style="color: ${costColor}">💰 ${action.cost_level.toUpperCase()} cost</small> | 
-                            <small>⚡ ${Math.round(action.mw_effect)} MW impact</small> | 
-                            <small>⏱️ ${action.eta_min} min ETA</small> | 
+                            <small style="color: ${costColor}">💰 ${action.cost_level.toUpperCase()} cost</small> |
+                            <small>⚡ ${Math.round(action.mw_effect)} MW impact</small> |
+                            <small>⏱️ ${action.eta_min} min ETA</small> |
                             <small>🏢 ${action.sector || 'General'} sector</small><br>
                             <em>${action.notes}</em>
                         </li>
@@ -1319,6 +1490,102 @@ if __name__ == '__main__':
                 resultDiv.innerHTML = `<div class="result error"><strong>❌ Error:</strong> ${error.response?.data?.error || error.message}</div>`;
             }
         }
+        // --- USER & ENERGY TRADING SECTION ---
+        let usersData = [];
+
+        async function loadUsers() {
+            try {
+                const response = await axios.get('/api/users');
+                usersData = response.data.users;
+                renderUserList();
+                populateTradeDropdowns();
+            } catch (error) {
+                document.getElementById('user-list').innerHTML = `<div class="result error"><strong>❌ Error loading users:</strong> ${error.response?.data?.error || error.message}</div>`;
+            }
+        }
+
+        function renderUserList() {
+            const userListDiv = document.getElementById('user-list');
+            if (!usersData || usersData.length === 0) {
+                userListDiv.innerHTML = '<p>No users found.</p>';
+                return;
+            }
+            userListDiv.innerHTML = usersData.map(user => `
+                <div class="user-card">
+                    <h4>${user.name}</h4>
+                    <div class="balance">${Math.round(user.balance_mw * 100) / 100} MW</div>
+                    <div class="location">${user.city} - ${user.area}</div>
+                    <div style="font-size:12px;color:#888;">ID: ${user.user_id}</div>
+                </div>
+            `).join('');
+        }
+
+        function populateTradeDropdowns() {
+            const senderSelect = document.getElementById('trade-sender');
+            const receiverSelect = document.getElementById('trade-receiver');
+            senderSelect.innerHTML = '';
+            receiverSelect.innerHTML = '';
+            usersData.forEach(user => {
+                senderSelect.innerHTML += `<option value="${user.user_id}">${user.name} (${user.area})</option>`;
+                receiverSelect.innerHTML += `<option value="${user.user_id}">${user.name} (${user.area})</option>`;
+            });
+        }
+
+        async function tradeEnergy() {
+            const senderId = document.getElementById('trade-sender').value;
+            const receiverId = document.getElementById('trade-receiver').value;
+            const unitsMw = parseFloat(document.getElementById('trade-units').value);
+            const note = document.getElementById('trade-note').value;
+            const resultDiv = document.getElementById('trade-result');
+            resultDiv.innerHTML = '<div class="loading">🔄 Executing trade...</div>';
+
+            if (senderId === receiverId) {
+                resultDiv.innerHTML = `<div class="result error"><strong>❌ Error:</strong> Sender and receiver must be different users.</div>`;
+                return;
+            }
+            if (isNaN(unitsMw) || unitsMw <= 0) {
+                resultDiv.innerHTML = `<div class="result error"><strong>❌ Error:</strong> Units to trade must be positive.</div>`;
+                return;
+            }
+
+            try {
+                const response = await axios.post('/api/trade-energy', {
+                    sender_id: senderId,
+                    receiver_id: receiverId,
+                    units_mw: unitsMw,
+                    note: note
+                });
+                const result = response.data;
+                if (result.status === "success") {
+                    resultDiv.innerHTML = `
+                        <div class="result">
+                            <h4>✅ Trade Successful</h4>
+                            <p><strong>Transaction ID:</strong> ${result.transaction_id}</p>
+                            <p><strong>Timestamp:</strong> ${result.timestamp}</p>
+                            <p><strong>Sender:</strong> ${result.sender_id} | <strong>New Balance:</strong> ${Math.round(result.sender_balance_mw * 100) / 100} MW</p>
+                            <p><strong>Receiver:</strong> ${result.receiver_id} | <strong>New Balance:</strong> ${Math.round(result.receiver_balance_mw * 100) / 100} MW</p>
+                            <p><strong>Units Traded:</strong> ${result.units_mw} MW</p>
+                            <p><strong>Note:</strong> ${result.note}</p>
+                        </div>
+                    `;
+                    // Refresh user list to show updated balances
+                    await loadUsers();
+                } else {
+                    resultDiv.innerHTML = `<div class="result error"><strong>❌ Trade Failed:</strong> ${result.message}</div>`;
+                }
+            } catch (error) {
+                const errMsg = error.response?.data?.message || error.message;
+                resultDiv.innerHTML = `<div class="result error"><strong>❌ Trade Failed:</strong> ${errMsg}</div>`;
+            }
+        }
+
+        // Load users when the tab is shown
+        document.querySelector('button.nav-tab[onclick*="users"]').addEventListener('click', loadUsers);
+
+        // Initial load for users tab if it's default
+        if (document.getElementById('users').classList.contains('active')) {
+            loadUsers();
+        }
     </script>
 </body>
 </html>
@@ -1327,10 +1594,10 @@ if __name__ == '__main__':
     # Write the template file
     with open('templates/index.html', 'w') as f:
         f.write(html_template)
-    
-    print("🚀 Starting Enhanced Grid Operations Flask Server...")
-    print("📊 Dashboard available at: http://localhost:5000")
-    print("🔧 API endpoints:")
+
+    print("Starting Enhanced Grid Operations Flask Server...")
+    print("Dashboard available at: http://localhost:5000")
+    print("API endpoints:")
     print("   - /api/predict (consumption prediction)")
     print("   - /api/prep (3-hour energy preparation)")
     print("   - /api/monitor (generation monitoring)")
@@ -1338,8 +1605,9 @@ if __name__ == '__main__':
     print("   - /api/analyze-patterns (consumption pattern analysis)")
     print("   - /api/similar-days (similar consumption days)")
     print("   - /api/upload-csv (CSV data upload)")
-    print("🤖 RAG pipeline with ChromaDB enabled for enhanced AI analysis")
-    
-    app.run(debug=True, host='0.0.0.0', port=5000) 
+    print("   - /api/users (user list)")
+    print("   - /api/user-balance/<user_id> (user balance)")
+    print("   - /api/trade-energy (energy trading)")
+    print("RAG pipeline with ChromaDB enabled for enhanced AI analysis")
 
-
+    app.run(debug=True, host='0.0.0.0', port=5000)
